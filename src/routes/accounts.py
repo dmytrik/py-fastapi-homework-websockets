@@ -505,8 +505,6 @@ async def login_user(
             detail="User account is not activated.",
         )
 
-    await activity_repo.create_user_activity(UserBaseDTO.model_validate(user))
-
     jwt_refresh_token = jwt_manager.create_refresh_token({"user_id": user.id})
 
     try:
@@ -526,6 +524,9 @@ async def login_user(
         )
 
     jwt_access_token = jwt_manager.create_access_token({"user_id": user.id})
+
+    await activity_repo.create_user_activity(UserBaseDTO.model_validate(user))
+
     return UserLoginResponseSchema(
         access_token=jwt_access_token,
         refresh_token=jwt_refresh_token,
