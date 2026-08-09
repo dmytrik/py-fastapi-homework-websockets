@@ -856,8 +856,8 @@ they connect. `users` is a list of full `UserActivitySchema` objects:
 {
   "event": "online_users",
   "users": [
-    {"user_id": 1, "email": "a@example.com", "status": "online", "connected_at": "...", "disconnected_at": null},
-    {"user_id": 2, "email": "b@example.com", "status": "online", "connected_at": "...", "disconnected_at": "..."}
+    {"user_id": 1, "email": "user1@example.com", "status": "online", "connected_at": "...", "disconnected_at": null},
+    {"user_id": 2, "email": "user2@example.com", "status": "online", "connected_at": "...", "disconnected_at": "..."}
   ]
 }
 ```
@@ -869,7 +869,7 @@ connected. `user` is the single full `UserActivitySchema` of that user
 ```json
 {
   "event": "user_connected",
-  "user": {"user_id": 2, "email": "b@example.com", "status": "online", "connected_at": "...", "disconnected_at": null}
+  "user": {"user_id": 2, "email": "user2@example.com", "status": "online", "connected_at": "...", "disconnected_at": null}
 }
 ```
 

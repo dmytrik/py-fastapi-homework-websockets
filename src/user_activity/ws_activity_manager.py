@@ -24,19 +24,7 @@ class UserActivityWebSocketManager(UserActivityWebSocketManagerInterface):
         Returns:
             None
         """
-        connections = self.active_connections.setdefault(user_data.user_id, [])
-        is_first_connection = len(connections) == 0
-
-        connections.append(websocket)
-
-        if is_first_connection:
-            await self._broadcast(
-                {
-                    "event": "user_connected",
-                    "user": user_data.model_dump(mode="json"),
-                },
-                exclude=user_data.user_id
-            )
+        # Write your code here
 
     async def disconnect(self, user_id: int, websocket: WebSocket) -> None:
         """
@@ -50,19 +38,7 @@ class UserActivityWebSocketManager(UserActivityWebSocketManagerInterface):
         Returns:
             None
         """
-        connections = self.active_connections.get(user_id)
-        if not connections:
-            return
-
-        if websocket in connections:
-            connections.remove(websocket)
-
-        if not connections:
-            self.active_connections.pop(user_id, None)
-            await self._broadcast({
-                "event": "user_disconnected",
-                "user_id": user_id,
-            })
+        # Write your code here
 
     async def _broadcast(self, message: dict, exclude: int = None) -> None:
         """
@@ -75,11 +51,7 @@ class UserActivityWebSocketManager(UserActivityWebSocketManagerInterface):
         Returns:
             None
         """
-        for user_id, connections in self.active_connections.items():
-            if user_id == exclude:
-                continue
-            for websocket in connections:
-                await websocket.send_json(message)
+        # Write your code here
 
     async def send_personal_message(self, message: dict, user_id: int) -> None:
         """
@@ -92,6 +64,4 @@ class UserActivityWebSocketManager(UserActivityWebSocketManagerInterface):
         Returns:
             None
         """
-        connections = self.active_connections.get(user_id, [])
-        for websocket in connections:
-            await websocket.send_json(message)
+        # Write your code here
