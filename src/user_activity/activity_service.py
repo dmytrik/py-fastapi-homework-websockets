@@ -49,4 +49,53 @@ class UserActivityService(UserActivityServiceInterface):
         Returns:
             None
         """
-        # Write your code here
+        await websocket.accept()
+        user_id = None
+
+        try:
+            message = await asyncio.wait_for(websocket.receive_json(), timeout=30)
+            token = message.get("token")
+            if not token:
+                await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                return
+
+            payload = self.jwt_auth_manager.decode_access_token(token)
+            user_id = payload.get("user_id") if isinstance(payload, dict) else getattr(payload, "user_id", None)
+            if not user_id:
+                await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                return
+
+            user_activity = await self.activity_repo.update_user_activity(
+                UpdateUserActivitySchema(
+                    user_id=user_id,
+                    status="online",
+                    connected_at=datetime.now()
+                )
+            )
+
+            await self.activity_ws_manager.connect(websocket, user_activity)
+
+            active_users = await self.activity_repo.get_all_active_users()
+            await self.activity_ws_manager.send_personal_message(
+                {"event": "online_users", "users": [user.model_dump() for user in active_users]},
+                user_id
+            )
+
+            while True:
+                await websocket.receive_json()
+
+        except WebSocketDisconnect:
+            if user_id:
+                self.activity_ws_manager.disconnect(user_id, websocket)
+
+                if user_id not in self.activity_repo.get_all_active_users():
+                    await self.activity_repo.update_user_activity(
+                        UpdateUserActivitySchema(
+                            user_id=user_id,
+                            status="offline",
+                            disconnected_at=datetime.now()
+                        )
+                    )
+
+        except Exception:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)

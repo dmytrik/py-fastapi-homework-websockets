@@ -28,7 +28,15 @@ class UserActivityRepository(UserActivityRepoInterface):
         Returns:
             None
         """
-        # Write your code here
+        await self.db["user_activity"].update_one(
+            {"user_id": user_data.id},
+            {
+                "user_id": user_data.id,
+                "email": user_data.email,
+                "status": "offline"
+            },
+            upsert=True,
+        )
 
     async def update_user_activity(
             self,
@@ -43,7 +51,22 @@ class UserActivityRepository(UserActivityRepoInterface):
         Returns:
             UserActivitySchema: The updated activity record.
         """
-        # Write your code here
+        update_data = {
+            key: value for key, value in user_data.model_dump().items() if value is not None
+        }
+
+        if update_data:
+            await self.db["user_activity"].update_one(
+                {"user_id": user_data.id},
+                {"$set": update_data},
+            )
+
+        document = await self.db["user_activity"].find_one(
+            {"user_id": user_data.id},
+            {"_id": 0}
+        )
+
+        return UserActivitySchema(**document)
 
     async def get_all_active_users(self) -> List[UserActivitySchema]:
         """
@@ -52,4 +75,9 @@ class UserActivityRepository(UserActivityRepoInterface):
         Returns:
             List[UserActivitySchema]: A list of activity records for all online users.
         """
-        # Write your code here
+        online_users = await self.db["user_activity"].find(
+            {"status": "online"},
+            {"_id": 0}
+        )
+
+        return [UserActivitySchema(**user) async for user in online_users]
